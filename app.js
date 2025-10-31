@@ -61,26 +61,36 @@ const server = http.createServer(async (req, res) => {
 
     }
     // create new task
-    // else if (req.url === '/tasks' && req.method === "POST") {
-    //     const body = [];
+    else if (req.url === '/tasks' && req.method === "POST") {
+        const body = [];
 
-    //     req.on("data", (chunk) => {
-    //         body.push(chunk);
-    //     })
+        req.on("data", (chunk) => {
+            body.push(chunk);
+        })
 
-    //     req.on("end",async () => {
-    //         const newTask = JSON.parse(body);
-    //         try {
-    //             await mongodb.connect();
-    //         } catch (error) {
-                
-    //         }
+        req.on("end", async () => {
+            const newTask = JSON.parse(Buffer.concat(body).toString());
+            newTask.completedStatus = false;
+            // console.log(newTask);
+
+            try {
+                await mongodb.connect();
+                const db = mongodb.db(dbName);
+                const collection = db.collection(collectionName);
+                const result = await collection.insertOne(newTask);
+                res.writeHead(201, { "content-type": "application/json" });
+                res.end(JSON.stringify({ message: result }));
+
+            } catch (error) {
+                res.writeHead(500, { "content-type": "application/json" });
+                res.end(JSON.stringify({ message: error.message }));
+            } finally {
+                await mongodb.close();
+            }
+        })
 
 
-    //     })
-
-
-    // }
+    }
 
     else {
         res.writeHead(404, { "content-type": "application/json" });
