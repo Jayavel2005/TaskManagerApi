@@ -1,0 +1,27 @@
+{
+  "name": "taskmanagerapi",
+  "version": "1.0.0",
+  "description": "A simple REST API built with core Node.js to manage tasks (create, read, update, and delete) without using any external frameworks.",
+  "keywords": [
+    "\"keywords\":",
+    "["
+  ],
+  "homepage": "https://github.com/Jayavel2005/TaskManagerApi#readme",
+  "bugs": {
+    "url": "https://github.com/Jayavel2005/TaskManagerApi/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jayavel2005/TaskManagerApi.git"
+  },
+  "license": "ISC",
+  "author": "\"tasks\",",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
