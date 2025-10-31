@@ -5,7 +5,6 @@ const { MongoClient, ObjectId } = require("mongodb");
 
 
 // database configuration
-
 // New MongoDB object creation
 const mongodb = new MongoClient('mongodb://localhost:27017/');
 // database and collection name
@@ -98,14 +97,77 @@ const server = http.createServer(async (req, res) => {
             const db = mongodb.db(dbName);
             const collection = db.collection(collectionName);
             const result = await collection.deleteOne({ _id: new ObjectId(taskId) });
-            res.writeHead(204, { "content-type": "application/json" });
-            res.end(JSON.stringify({ message: result }));
+            res.writeHead(204);
+            res.end();
+
         } catch (err) {
             res.writeHead(500, { "content-type": "application/json" });
             res.end(JSON.stringify({ error: err.message }))
         } finally {
             await mongodb.close();
         }
+    }
+
+    else if (req.url.startsWith("/tasks/") && req.method === "PUT") {
+        const taskId = req.url.split('/')[2];
+
+        const body = [];
+        req.on("data", (chunk) => {
+            body.push(chunk);
+        })
+
+        req.on("end", async () => {
+            const updatedTask = JSON.parse(Buffer.concat(body).toString());
+            try {
+                await mongodb.connect();
+                const db = mongodb.db(dbName);
+                const collection = db.collection(collectionName);
+
+                const result = await collection.updateOne(
+                    { _id: new ObjectId(taskId) },
+                    { $set: updatedTask }
+                );
+
+                if (result.matchedCount === 0) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    return res.end(JSON.stringify({ message: "Task not found" }));
+                }
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ message: "Task updated successfully" }));
+
+            } catch (err) {
+                res.writeHead(500, { "content-type": "application/json" });
+                res.end(JSON.stringify({ message: err.message }));
+            } finally {
+                await mongodb.close();
+            }
+        })
+    }
+    else if (req.url.startsWith("/tasks/") && req.method === "PATCH") {
+        const taskId = req.url.split('/')[2];
+        const body = [];
+        req.on("data", (chunk) => {
+            body.push(chunk)
+        })
+
+        req.on("end", async () => {
+            const updatedFields = JSON.parse(Buffer.concat(body).toString());
+            try {
+                await mongodb.connect();
+                const db = mongodb.db(dbName);
+                const collection = db.collection(collectionName);
+
+                const result = await collection.updateOne({ _id: new ObjectId(taskId) }, { $set: updatedFields });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ message: "Task updated successfully" }));
+            } catch (err) {
+                res.writeHead(500, { "content-type": "application/json" });
+                res.end(JSON.stringify({ message: err.message }));
+            } finally {
+                await mongodb.close();
+
+            }
+        })
     }
 
     else {
