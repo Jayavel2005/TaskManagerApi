@@ -88,8 +88,24 @@ const server = http.createServer(async (req, res) => {
                 await mongodb.close();
             }
         })
+    }
 
-
+    // delete a task
+    else if (req.url.startsWith("/tasks/") && req.method === "DELETE") {
+        const taskId = req.url.split("/")[2];
+        try {
+            await mongodb.connect();
+            const db = mongodb.db(dbName);
+            const collection = db.collection(collectionName);
+            const result = await collection.deleteOne({ _id: new ObjectId(taskId) });
+            res.writeHead(204, { "content-type": "application/json" });
+            res.end(JSON.stringify({ message: result }));
+        } catch (err) {
+            res.writeHead(500, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: err.message }))
+        } finally {
+            await mongodb.close();
+        }
     }
 
     else {
