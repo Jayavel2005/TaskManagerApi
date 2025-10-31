@@ -1,7 +1,7 @@
 // modules initializing
 const http = require("http");
 const querystring = require("querystring");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 
 
 // database configuration
@@ -15,7 +15,6 @@ const collectionName = "tasks"
 
 const server = http.createServer(async (req, res) => {
 
-    // get all tasks
     if (req.url === '/' && req.method === 'GET') {
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify(
@@ -26,8 +25,64 @@ const server = http.createServer(async (req, res) => {
         ));
     }
 
+    // get all tasks
+    else if (req.url === "/tasks" && req.method === "GET") {
+        try {
+            await mongodb.connect();
+            const db = mongodb.db(dbName);
+            const collection = db.collection(collectionName);
+            const tasks = await collection.find().toArray();
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { tasks } }));
+        } catch (err) {
+            res.writeHead(500, { "content-type": "application/json" })
+            res.end(JSON.stringify({ message: err.message }));
+        } finally {
+            await mongodb.close();
+        }
+    }
+
+    // get single task
+    else if (req.url.startsWith("/tasks/") && req.method === "GET") {
+        const taskId = req.url.split('/')[2];
+        try {
+            await mongodb.connect();
+            const db = mongodb.db(dbName);
+            const collection = db.collection(collectionName);
+            const task = await collection.findOne({ _id: new ObjectId(taskId) });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { task } }))
+        } catch (err) {
+            res.writeHead(500, { "content-type": "application/json" })
+            res.end(JSON.stringify({ message: err.message }));
+        } finally {
+            await mongodb.close();
+        }
+
+    }
+    // create new task
+    // else if (req.url === '/tasks' && req.method === "POST") {
+    //     const body = [];
+
+    //     req.on("data", (chunk) => {
+    //         body.push(chunk);
+    //     })
+
+    //     req.on("end",async () => {
+    //         const newTask = JSON.parse(body);
+    //         try {
+    //             await mongodb.connect();
+    //         } catch (error) {
+                
+    //         }
+
+
+    //     })
+
+
+    // }
+
     else {
-        
         res.writeHead(404, { "content-type": "application/json" });
         res.end(JSON.stringify({ message: "url not found" }));
     }
