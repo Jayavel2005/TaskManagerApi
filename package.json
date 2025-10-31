@@ -19,9 +19,11 @@
   "type": "commonjs",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev" : "nodemon app.js"
   },
   "dependencies": {
+    "mongodb": "^6.20.0",
     "nodemon": "^3.1.10"
   }
 }
